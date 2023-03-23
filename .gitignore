@@ -2,3 +2,4 @@
 /out
 /docs
 /pnpm-lock.yaml
+*.vsix
