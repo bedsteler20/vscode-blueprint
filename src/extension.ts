@@ -1,19 +1,24 @@
-import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
-import * as vscode from "vscode"
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+} from "vscode-languageclient/node";
+import * as vscode from "vscode";
+import { format } from "path";
+import { BlueprintCompiler } from "./compiler";
+import { BlueprintFormatter } from "./formatter";
+
 let client: LanguageClient;
 
-function evalVars(str: string) {
-    const workspaceFolder = vscode.workspace.workspaceFolders![0].uri.path
-    return str.replace("${workspaceFolder}", workspaceFolder)
-}
+export function activate(context: vscode.ExtensionContext): void {
+    let compiler = new BlueprintCompiler();
+    
+    BlueprintFormatter.register(context, compiler);
 
-export function activate(): void {
-    const config = vscode.workspace.getConfiguration("blueprint-gtk");
-    let command: string = config.get("command") ?? "blueprint-compiler";
-    let args: string[] = config.get("arguments") ?? [];
-    command = evalVars(command);
-    args = args.map(evalVars);
-    const serverOptions: ServerOptions = { command: command, args: [...args, "lsp"] };
+    const serverOptions: ServerOptions = {
+        command: compiler.command,
+        args: [...compiler.args, "lsp"],
+    };
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ scheme: "file", language: "blueprint-gtk" }],
     };
